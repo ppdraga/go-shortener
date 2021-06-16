@@ -3,7 +3,9 @@ package main
 import (
 	"context"
 	"github.com/gorilla/mux"
+	"github.com/joho/godotenv"
 	"github.com/ppdraga/go-shortener/app"
+	"github.com/ppdraga/go-shortener/settings"
 	"github.com/sirupsen/logrus"
 	"net"
 	"net/http"
@@ -18,8 +20,14 @@ func main() {
 
 	logger.Info("Starting the application")
 
+	if err := godotenv.Load(); err != nil {
+		logger.Infof("No .env file found")
+	}
+	settings.Config = settings.Settings{
+		Port: os.Getenv("PORT"),
+	}
 	// TODO get port from settings file or environment
-	port := "8080"
+	//port := "8080"
 
 	r := mux.NewRouter()
 	r.HandleFunc("/", app.HomeHandler())
@@ -30,7 +38,7 @@ func main() {
 	shutdown := make(chan error, 1)
 
 	server := http.Server{
-		Addr:    net.JoinHostPort("", port),
+		Addr:    net.JoinHostPort("", settings.Config.Port),
 		Handler: r,
 	}
 

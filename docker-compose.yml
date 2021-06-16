@@ -10,4 +10,4 @@ services:
     volumes:
       - .volumes/db/sql_data:/var/lib/postgresql/data:z
     environment:
-      POSTGRES_PASSWORD: postgres
+      POSTGRES_PASSWORD: $PG_PASSWD
