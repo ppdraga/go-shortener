@@ -5,6 +5,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/joho/godotenv"
 	"github.com/ppdraga/go-shortener/app"
+	"github.com/ppdraga/go-shortener/database"
 	"github.com/ppdraga/go-shortener/settings"
 	"github.com/sirupsen/logrus"
 	"net"
@@ -26,8 +27,18 @@ func main() {
 	settings.Config = settings.Settings{
 		Port: os.Getenv("PORT"),
 	}
-	// TODO get port from settings file or environment
-	//port := "8080"
+
+	// Database init
+	rsc, err := database.InitDB()
+	if err != nil {
+		logger.Panic("Can't initialize resources.", "err", err)
+	}
+	defer func() {
+		err := rsc.Release()
+		if err != nil {
+			logger.Error("Got an error during resources release.", "err", err)
+		}
+	}()
 
 	r := mux.NewRouter()
 	r.HandleFunc("/", app.HomeHandler())
@@ -44,6 +55,7 @@ func main() {
 
 	go func() {
 		err := server.ListenAndServe()
+		logger.Errorf("Got an error during ListenAndServe: %v", err)
 		shutdown <- err
 	}()
 	logger.Infof("The service is ready to listen and serve")
@@ -61,7 +73,7 @@ func main() {
 	}
 
 	logger.Infof("The service is stopping...")
-	err := server.Shutdown(context.Background())
+	err = server.Shutdown(context.Background())
 	if err != nil {
 		logger.Infof("Got an error during service shutdown: %v", err)
 	}
