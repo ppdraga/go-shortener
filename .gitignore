@@ -1,6 +1,7 @@
 # IDE settings
 .vscode
 .idea
+.volumes
 
 # Binaries for programs and plugins
 *.exe
