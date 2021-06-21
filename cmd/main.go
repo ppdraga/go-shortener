@@ -24,9 +24,12 @@ func main() {
 	if err := godotenv.Load(); err != nil {
 		logger.Infof("No .env file found")
 	}
+
+	port := os.Getenv("PORT")
 	settings.Config = settings.Settings{
-		Port: os.Getenv("PORT"),
+		Port: port,
 	}
+	logger.Infof("Application access port: %s", port)
 
 	// Database init
 	rsc, err := database.InitDB()
