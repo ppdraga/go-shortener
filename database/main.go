@@ -38,8 +38,14 @@ func InitDB() (*R, error) {
 	}
 	if err != nil {
 		//log.Fatal().Err(err).Msg("Can't connect to DB")
-		log.Info().Msg("Can't connect to DB")
-		return nil, err
+		log.Info().Msg("Can't connect to DB, try Heroku db...")
+		dsn := os.Getenv("DATABASE_URL")
+		log.Info().Msg(dsn)
+		dbcon, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
+		if err != nil {
+			log.Info().Msg("Heroku db not connected!!!")
+			return nil, err
+		}
 	}
 
 	dbcon.Exec(`
