@@ -37,7 +37,8 @@ func InitDB() (*R, error) {
 		time.Sleep(3 * time.Second)
 	}
 	if err != nil {
-		log.Fatal().Err(err).Msg("Can't connect to DB")
+		//log.Fatal().Err(err).Msg("Can't connect to DB")
+		log.Info().Msg("Can't connect to DB")
 		return nil, err
 	}
 
