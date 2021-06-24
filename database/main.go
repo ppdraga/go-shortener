@@ -1,7 +1,7 @@
 package database
 
 import (
-	"database/sql"
+	_ "database/sql"
 	"fmt"
 	_ "github.com/ppdraga/go-shortener/settings"
 	"github.com/rs/zerolog/log"
