@@ -1,6 +1,7 @@
 module github.com/ppdraga/go-shortener
 
 // +heroku goVersion go1.15
+// +heroku install github.com/ppdraga/go-shortener/cmd
 go 1.16
 
 require (
