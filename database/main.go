@@ -40,7 +40,7 @@ func InitDB() (*R, error) {
 		dbname = os.Getenv("PG_DB")
 		port = os.Getenv("PG_PORT")
 	}
-	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable TimeZone=Europe/Moscow",
+	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s TimeZone=Europe/Moscow",
 		host, user, password, dbname, port)
 	log.Print(dsn)
 
