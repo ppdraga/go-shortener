@@ -8,6 +8,7 @@ import (
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"os"
+	"regexp"
 	"time"
 )
 
@@ -17,11 +18,28 @@ type R struct {
 }
 
 func InitDB() (*R, error) {
-	host := os.Getenv("PG_HOST")
-	user := os.Getenv("PG_USER")
-	password := os.Getenv("PG_PASSWD")
-	dbname := os.Getenv("PG_DB")
-	port := os.Getenv("PG_PORT")
+	var host string
+	var user string
+	var password string
+	var port string
+	var dbname string
+	dsnRegex := regexp.MustCompile(`postgres:\/\/([^:]+):(.+)@([^:]+):([0-9]+)\/(.+)`)
+	dsnString := os.Getenv("DATABASE_URL")
+	log.Info().Msg(dsnString)
+	dsnMatch := dsnRegex.FindStringSubmatch(dsnString)
+	if dsnMatch != nil {
+		host = dsnMatch[len(dsnMatch)-3]
+		user = dsnMatch[len(dsnMatch)-5]
+		password = dsnMatch[len(dsnMatch)-4]
+		port = dsnMatch[len(dsnMatch)-2]
+		dbname = dsnMatch[len(dsnMatch)-1]
+	} else {
+		host = os.Getenv("PG_HOST")
+		user = os.Getenv("PG_USER")
+		password = os.Getenv("PG_PASSWD")
+		dbname = os.Getenv("PG_DB")
+		port = os.Getenv("PG_PORT")
+	}
 	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable TimeZone=Europe/Moscow",
 		host, user, password, dbname, port)
 	log.Print(dsn)
@@ -39,21 +57,8 @@ func InitDB() (*R, error) {
 	}
 	if err != nil {
 		//log.Fatal().Err(err).Msg("Can't connect to DB")
-		log.Info().Msg("Can't connect to DB, try Heroku db...")
-		dsn := os.Getenv("DATABASE_URL")
-		log.Info().Msg(dsn)
-		sqlDB, err := sql.Open("postgres", dsn)
-		if err != nil {
-			log.Info().Msgf("Heroku db err can't connect! err: %v", err)
-			return nil, err
-		}
-		dbcon, err = gorm.Open(postgres.New(postgres.Config{
-			Conn: sqlDB,
-		}), &gorm.Config{})
-		if err != nil {
-			log.Info().Msgf("Gorm err can't init connection! err: %v", err)
-			return nil, err
-		}
+		log.Info().Msg("Can't connect to DB!")
+		return nil, err
 	}
 
 	dbcon.Exec(`
