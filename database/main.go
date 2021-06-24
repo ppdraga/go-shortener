@@ -1,6 +1,7 @@
 package database
 
 import (
+	"database/sql"
 	"fmt"
 	_ "github.com/ppdraga/go-shortener/settings"
 	"github.com/rs/zerolog/log"
@@ -41,9 +42,16 @@ func InitDB() (*R, error) {
 		log.Info().Msg("Can't connect to DB, try Heroku db...")
 		dsn := os.Getenv("DATABASE_URL")
 		log.Info().Msg(dsn)
-		dbcon, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
+		sqlDB, err := sql.Open("postgres", dsn)
 		if err != nil {
-			log.Info().Msg("Heroku db not connected!!!")
+			log.Info().Msgf("Heroku db err can't connect! err: %v", err)
+			return nil, err
+		}
+		dbcon, err = gorm.Open(postgres.New(postgres.Config{
+			Conn: sqlDB,
+		}), &gorm.Config{})
+		if err != nil {
+			log.Info().Msgf("Gorm err can't init connection! err: %v", err)
 			return nil, err
 		}
 	}
