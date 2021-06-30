@@ -42,15 +42,19 @@ func InitDB() (*R, error) {
 	}
 
 	dbcon.Exec(`
+		-- DROP TABLE IF EXISTS links;
 		CREATE TABLE IF NOT EXISTS links (
             id serial PRIMARY KEY,
             created_at date NOT NULL DEFAULT CURRENT_DATE,
             resource TEXT NOT NULL,
             short_link VARCHAR(255) NOT NULL,
+            short_link_num BIGINT NOT NULL DEFAULT 0,
             custom_name VARCHAR(255) NULL
         );
         DROP INDEX IF EXISTS short_link_idx;
+        DROP INDEX IF EXISTS short_link_num_idx;
         CREATE INDEX short_link_idx ON links (short_link);
+        CREATE INDEX short_link_num_idx ON links (short_link_num);
 
 `)
 	return &R{DB: dbcon}, nil

@@ -44,7 +44,10 @@ func main() {
 	}()
 
 	r := mux.NewRouter()
-	r.HandleFunc("/", app.HomeHandler())
+	r.HandleFunc("/", app.HomeHandler()).Methods("GET")
+	r.HandleFunc("/_api", app.APIHomeHandler()).Methods("GET")
+	r.HandleFunc("/_api/", app.APIHandler(rsc))
+	r.HandleFunc("/{.+}", app.RedirectHandler()).Methods("GET")
 
 	interrupt := make(chan os.Signal, 1)
 	signal.Notify(interrupt, os.Interrupt, syscall.SIGTERM)
