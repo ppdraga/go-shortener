@@ -42,10 +42,10 @@ func InitDB() (*R, error) {
 	}
 
 	dbcon.Exec(`
-		-- DROP TABLE IF EXISTS links;
+		DROP TABLE IF EXISTS links;
 		CREATE TABLE IF NOT EXISTS links (
             id serial PRIMARY KEY,
-            created_at date NOT NULL DEFAULT CURRENT_DATE,
+            created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
             resource TEXT NOT NULL,
             short_link VARCHAR(255) NOT NULL,
             short_link_num BIGINT NOT NULL DEFAULT 0,

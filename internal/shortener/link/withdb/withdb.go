@@ -22,5 +22,13 @@ func (wdb *WithDB) ReadLink(id int64) (*datatype.Link, error) {
 
 func (wdb *WithDB) WriteLink(external *datatype.Link) error {
 
+	link := LinkModel{
+		Resource:     *external.Resource,
+		ShortLink:    "short_link",
+		ShortLinkNum: 1,
+		CustomName:   *external.CustomName,
+	}
+	wdb.db.Create(&link)
+
 	return nil
 }

@@ -1,9 +1,9 @@
 package datatype
 
 type Link struct {
-	ID           *int64  `json:"id"`
-	Resource     *string `json:"resource"`
-	ShortLink    *string `json:"short_link"`
-	ShortLinkNum *string `json:"short_link_num"`
-	CustomName   *string `json:"custom_name"`
+	ID           *int64  `json:"id,omitempty"`
+	Resource     *string `json:"resource,omitempty"`
+	ShortLink    *string `json:"short_link,omitempty"`
+	ShortLinkNum *string `json:"short_link_num,omitempty"`
+	CustomName   *string `json:"custom_name,omitempty"`
 }

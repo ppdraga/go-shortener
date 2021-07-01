@@ -7,7 +7,7 @@ type Controller struct {
 }
 
 type LinkReadWriter interface {
-	ReadLink(params map[string]interface{}) (*datatype.Link, error)
+	ReadLink(id int64) (*datatype.Link, error)
 	WriteLink(link *datatype.Link) error
 }
 
@@ -21,6 +21,6 @@ func (c *Controller) AddLink(link *datatype.Link) error {
 	return c.rw.WriteLink(link)
 }
 
-func (c *Controller) GetLink(params map[string]interface{}) (*datatype.Link, error) {
-	return c.rw.ReadLink(params)
+func (c *Controller) GetLink(id int64) (*datatype.Link, error) {
+	return c.rw.ReadLink(id)
 }
