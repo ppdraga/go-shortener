@@ -8,6 +8,7 @@ import (
 	linkc "github.com/ppdraga/go-shortener/internal/shortener/link"
 	"github.com/ppdraga/go-shortener/internal/shortener/link/datatype"
 	"net/http"
+	"strconv"
 )
 
 func APIHomeHandler() http.HandlerFunc {
@@ -34,7 +35,25 @@ func APIHandler(linkCtrl *linkc.Controller) http.HandlerFunc {
 
 		if r.Method == "GET" {
 			id, ok := vars["id"]
-			fmt.Println(id, ok)
+			if !ok {
+				restapi.ResponseBadRequest("Couldn't parse id param", w)
+				return
+			}
+			idInt, err := strconv.Atoi(id)
+			if err != nil {
+				errMsg := fmt.Sprintf("Error %v", err)
+				restapi.ResponseBadRequest(errMsg, w)
+				return
+			}
+			item, err := linkCtrl.GetLink(int64(idInt))
+			if err != nil {
+				errMsg := fmt.Sprintf("Error: %v", err)
+				restapi.ResponseBadRequest(errMsg, w)
+				return
+			}
+			w.WriteHeader(http.StatusOK)
+			json.NewEncoder(w).Encode(*item)
+			return
 		}
 
 		w.WriteHeader(http.StatusOK)

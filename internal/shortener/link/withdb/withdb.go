@@ -17,8 +17,18 @@ func New(db *gorm.DB) *WithDB {
 }
 
 func (wdb *WithDB) ReadLink(id int64) (*datatype.Link, error) {
+	var linkItem LinkModel
+	err := wdb.db.First(&linkItem, id).Error
+	if err != nil {
+		return &datatype.Link{}, err
+	}
 
-	return &datatype.Link{}, nil
+	return &datatype.Link{
+		ID:         &linkItem.ID,
+		Resource:   &linkItem.Resource,
+		ShortLink:  &linkItem.ShortLink,
+		CustomName: &linkItem.CustomName,
+	}, nil
 }
 
 func (wdb *WithDB) WriteLink(external *datatype.Link) error {
@@ -44,17 +54,17 @@ func (wdb *WithDB) WriteLink(external *datatype.Link) error {
 		ShortLinkNum: shortLinkNum,
 		CustomName:   customName,
 	}
-	wdb.db.Create(&link)
+	err := wdb.db.Create(&link).Error
 
-	return nil
+	return err
 }
 
 func getFreeNumber(customName string, db *gorm.DB) int64 {
 	var result int64
 	if customName == "" {
-		db.Raw("SELECT MAX(short_link_num) FROM links WHERE custom_name IS NULL OR custom_name = ''").Scan(&result)
+		db.Raw("SELECT COALESCE(MAX(short_link_num), 0) FROM links WHERE custom_name IS NULL OR custom_name = ''").Scan(&result)
 	} else {
-		db.Raw("SELECT MAX(short_link_num) FROM links WHERE custom_name = ?", customName).Scan(&result)
+		db.Raw("SELECT COALESCE(MAX(short_link_num), 0) FROM links WHERE custom_name = ?", customName).Scan(&result)
 	}
 	return result + 1
 }
