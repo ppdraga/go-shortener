@@ -34,7 +34,7 @@ func main() {
 	logger.Infof("Application access port: %s", port)
 
 	// Database init
-	rsc, err := database.InitDB()
+	rsc, err := database.InitDB(logger)
 	if err != nil {
 		logger.Panic("Can't initialize resources.", "err", err)
 	}
@@ -59,7 +59,7 @@ func main() {
 	r.HandleFunc("/_api/link", app.APIHandler(linkCtrl))
 	r.HandleFunc("/_api/link/", app.APIHandler(linkCtrl))
 	r.HandleFunc("/_api/link/{id:[0-9]+}", app.APIHandler(linkCtrl))
-	r.HandleFunc("/{.+}", app.RedirectHandler()).Methods("GET")
+	r.HandleFunc("/{.+}", app.RedirectHandler(linkCtrl)).Methods("GET")
 
 	interrupt := make(chan os.Signal, 1)
 	signal.Notify(interrupt, os.Interrupt, syscall.SIGTERM)

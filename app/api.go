@@ -30,7 +30,21 @@ func APIHandler(linkCtrl *linkc.Controller) http.HandlerFunc {
 				restapi.ResponseBadRequest("Couldn't parse request body", w)
 				return
 			}
-			linkCtrl.AddLink(linkItem)
+			err, linkID := linkCtrl.AddLink(linkItem)
+			if err != nil {
+				errMsg := fmt.Sprintf("Error while adding a link: %v", err)
+				restapi.ResponseBadRequest(errMsg, w)
+				return
+			}
+			item, err := linkCtrl.GetLink(linkID)
+			if err != nil {
+				errMsg := fmt.Sprintf("Error: %v", err)
+				restapi.ResponseBadRequest(errMsg, w)
+				return
+			}
+			w.WriteHeader(http.StatusCreated)
+			json.NewEncoder(w).Encode(*item)
+			return
 		}
 
 		if r.Method == "GET" {
