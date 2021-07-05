@@ -18,8 +18,8 @@ func InitTestSQLite(logger *logrus.Logger) (*database.R, error) {
 
 func ApplyMigrations(db *gorm.DB) {
 	db.Exec(`
-		CREATE TABLE IF NOT EXISTS links (
-            id serial PRIMARY KEY,
+		CREATE TABLE links (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
             created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
             resource TEXT NOT NULL,
             short_link VARCHAR(255) NOT NULL,

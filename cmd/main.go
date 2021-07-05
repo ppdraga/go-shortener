@@ -37,7 +37,7 @@ func main() {
 	rsc, err := database.InitDB(logger)
 	if err != nil {
 		//logger.Panic("Can't initialize resources.", "err", err)
-		logger.Info("Can't initialize resources.", "err", err)
+		logger.Infof("Can't initialize resources. %v", err)
 	}
 	defer func() {
 		err := rsc.Release()
@@ -48,10 +48,6 @@ func main() {
 
 	linkdb := linkwdb.New(rsc.DB)
 	linkCtrl := linkc.NewController(linkdb)
-
-	//linkh := restapi.LinkHandlers{
-	//	LinkController: linkCtrl,
-	//}
 
 	r := mux.NewRouter()
 	r.HandleFunc("/", app.HomeHandler()).Methods("GET")
