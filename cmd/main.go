@@ -34,7 +34,8 @@ func main() {
 	// Database init
 	rsc, err := database.InitDB()
 	if err != nil {
-		logger.Panic("Can't initialize resources.", "err", err)
+		//logger.Panic("Can't initialize resources.", "err", err)
+		logger.Info("Can't initialize resources.", "err", err)
 	}
 	defer func() {
 		err := rsc.Release()
