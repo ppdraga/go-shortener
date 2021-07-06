@@ -7,9 +7,9 @@
 
 Add link:
 curl -i -X POST -H "Content-Type: application/json" -d '{"resource": "http://url.com/something", "custom_name": "Custom"}' http://127.0.0.1:8084/_api/link/
-
-Get all links:
-curl -i -X GET http://127.0.0.1:8084/_api/link/
+curl -i -X POST -H "Content-Type: application/json" -d '{"resource": "https://www.yandex.ru/pogoda/moscow", "pogoda": "Custom"}' http://127.0.0.1:8084/_api/link/
 
 Get specified link:
 curl -i -X GET http://127.0.0.1:8084/_api/link/1
+
+
