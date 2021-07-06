@@ -60,7 +60,7 @@ func InitDB(logger *logrus.Logger) (*R, error) {
 	}
 
 	dbcon.Exec(`
-		DROP TABLE IF EXISTS links;
+		-- DROP TABLE IF EXISTS links;
 		CREATE TABLE IF NOT EXISTS links (
             id serial PRIMARY KEY,
             created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
