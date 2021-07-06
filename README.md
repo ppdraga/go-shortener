@@ -7,9 +7,13 @@
 
 Add link:
 curl -i -X POST -H "Content-Type: application/json" -d '{"resource": "http://url.com/something", "custom_name": "Custom"}' http://127.0.0.1:8084/_api/link/
-curl -i -X POST -H "Content-Type: application/json" -d '{"resource": "https://www.yandex.ru/pogoda/moscow", "pogoda": "Custom"}' https://go-sh.herokuapp.com/_api/link/
+curl -i -X POST -H "Content-Type: application/json" -d '{"resource": "https://www.yandex.ru/pogoda/moscow", "custom_name": "pogoda"}' https://go-sh.herokuapp.com/_api/link/
 
 Get specified link:
 curl -i -X GET http://127.0.0.1:8084/_api/link/1
+curl -i -X GET https://go-sh.herokuapp.com/_api/link/1
 
+
+Redirect:
+curl -i -X GET https://go-sh.herokuapp.com/pogoda_
 
