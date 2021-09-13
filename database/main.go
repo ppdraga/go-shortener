@@ -1,10 +1,9 @@
 package database
 
 import (
-	_ "database/sql"
 	"fmt"
 	_ "github.com/ppdraga/go-shortener/settings"
-	"github.com/rs/zerolog/log"
+	"github.com/sirupsen/logrus"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"os"
@@ -17,7 +16,7 @@ type R struct {
 	//conn   *sql.DB
 }
 
-func InitDB() (*R, error) {
+func InitDB(logger *logrus.Logger) (*R, error) {
 	var host string
 	var user string
 	var password string
@@ -25,7 +24,7 @@ func InitDB() (*R, error) {
 	var dbname string
 	dsnRegex := regexp.MustCompile(`postgres:\/\/([^:]+):(.+)@([^:]+):([0-9]+)\/(.+)`)
 	dsnString := os.Getenv("DATABASE_URL")
-	log.Info().Msg(dsnString)
+	logger.Info(dsnString)
 	dsnMatch := dsnRegex.FindStringSubmatch(dsnString)
 	if dsnMatch != nil {
 		host = dsnMatch[len(dsnMatch)-3]
@@ -42,35 +41,38 @@ func InitDB() (*R, error) {
 	}
 	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s TimeZone=Europe/Moscow",
 		host, user, password, dbname, port)
-	log.Print(dsn)
+	logger.Info(dsn)
 
 	var dbcon *gorm.DB
 	var err error
 	for _, attempt := range []int{1, 2, 3} {
-		log.Info().Msgf("Connecting to DB, attempt %d...", attempt)
+		logger.Infof("Connecting to DB, attempt %d...", attempt)
 		dbcon, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
 		if err == nil {
-			log.Info().Msg("Connected!!!")
+			logger.Info("Connected!!!")
 			break
 		}
 		time.Sleep(3 * time.Second)
 	}
 	if err != nil {
-		//log.Fatal().Err(err).Msg("Can't connect to DB")
-		log.Info().Msg("Can't connect to DB!")
+		logger.Error("Can't connect to DB")
 		return nil, err
 	}
 
 	dbcon.Exec(`
+		-- DROP TABLE IF EXISTS links;
 		CREATE TABLE IF NOT EXISTS links (
             id serial PRIMARY KEY,
-            created_at date NOT NULL DEFAULT CURRENT_DATE,
+            created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
             resource TEXT NOT NULL,
             short_link VARCHAR(255) NOT NULL,
+            short_link_num BIGINT NOT NULL DEFAULT 0,
             custom_name VARCHAR(255) NULL
         );
         DROP INDEX IF EXISTS short_link_idx;
+        DROP INDEX IF EXISTS short_link_num_idx;
         CREATE INDEX short_link_idx ON links (short_link);
+        CREATE INDEX short_link_num_idx ON links (short_link_num);
 
 `)
 	return &R{DB: dbcon}, nil

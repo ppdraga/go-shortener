@@ -6,6 +6,8 @@ import (
 	"github.com/joho/godotenv"
 	"github.com/ppdraga/go-shortener/app"
 	"github.com/ppdraga/go-shortener/database"
+	linkc "github.com/ppdraga/go-shortener/internal/shortener/link"
+	linkwdb "github.com/ppdraga/go-shortener/internal/shortener/link/withdb"
 	"github.com/ppdraga/go-shortener/settings"
 	"github.com/sirupsen/logrus"
 	"net"
@@ -32,10 +34,10 @@ func main() {
 	logger.Infof("Application access port: %s", port)
 
 	// Database init
-	rsc, err := database.InitDB()
+	rsc, err := database.InitDB(logger)
 	if err != nil {
 		//logger.Panic("Can't initialize resources.", "err", err)
-		logger.Info("Can't initialize resources.", "err", err)
+		logger.Infof("Can't initialize resources. %v", err)
 	}
 	defer func() {
 		err := rsc.Release()
@@ -44,8 +46,17 @@ func main() {
 		}
 	}()
 
+	linkdb := linkwdb.New(rsc.DB)
+	linkCtrl := linkc.NewController(linkdb)
+
 	r := mux.NewRouter()
-	r.HandleFunc("/", app.HomeHandler())
+	r.HandleFunc("/", app.HomeHandler()).Methods("GET")
+	r.HandleFunc("/_api", app.APIHomeHandler()).Methods("GET")
+	r.HandleFunc("/_api/", app.APIHomeHandler()).Methods("GET")
+	r.HandleFunc("/_api/link", app.APIHandler(linkCtrl))
+	r.HandleFunc("/_api/link/", app.APIHandler(linkCtrl))
+	r.HandleFunc("/_api/link/{id:[0-9]+}", app.APIHandler(linkCtrl))
+	r.HandleFunc("/{.+}", app.RedirectHandler(linkCtrl)).Methods("GET")
 
 	interrupt := make(chan os.Signal, 1)
 	signal.Notify(interrupt, os.Interrupt, syscall.SIGTERM)

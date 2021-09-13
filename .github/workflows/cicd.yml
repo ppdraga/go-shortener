@@ -46,7 +46,7 @@ jobs:
         run: go test -v ./...
 
       # Runs linters
-      - name: golangci-lint
-        uses: golangci/golangci-lint-action@v2
-        with:
-          version: v1.29
+#      - name: golangci-lint
+#        uses: golangci/golangci-lint-action@v2
+#        with:
+#          version: v1.29
