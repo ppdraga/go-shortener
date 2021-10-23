@@ -7,6 +7,8 @@ import (
 	"github.com/ppdraga/go-shortener/internal/restapi"
 	linkc "github.com/ppdraga/go-shortener/internal/shortener/link"
 	"github.com/ppdraga/go-shortener/internal/shortener/link/datatype"
+	"github.com/ppdraga/go-shortener/prom"
+	"github.com/prometheus/client_golang/prometheus"
 	"net/http"
 	"strconv"
 )
@@ -21,6 +23,7 @@ func APIHomeHandler() http.HandlerFunc {
 
 func APIHandler(linkCtrl *linkc.Controller) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		prom.PathLength.With(prometheus.Labels{"LabelStatus": "OK"}).Observe(float64(len(r.URL.Path)))
 		vars := mux.Vars(r)
 		_ = vars
 		if r.Method == "POST" {
