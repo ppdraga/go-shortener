@@ -9,6 +9,7 @@ import (
 	linkc "github.com/ppdraga/go-shortener/internal/shortener/link"
 	"github.com/ppdraga/go-shortener/internal/shortener/link/datatype"
 	linkwdb "github.com/ppdraga/go-shortener/internal/shortener/link/withdb"
+	"github.com/ppdraga/go-shortener/prom"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 	"net/http"
@@ -45,6 +46,7 @@ func TestAPIHandler(t *testing.T) {
 		}
 		req, _ := http.NewRequest(http.MethodPost, "/_api/link/", bytes.NewReader(body))
 		rw := httptest.NewRecorder()
+		prom.Init()
 		apiHandler.ServeHTTP(rw, req)
 
 		assert.Equal(t, rw.Code, http.StatusCreated)

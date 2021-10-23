@@ -8,7 +8,9 @@ import (
 	"github.com/ppdraga/go-shortener/database"
 	linkc "github.com/ppdraga/go-shortener/internal/shortener/link"
 	linkwdb "github.com/ppdraga/go-shortener/internal/shortener/link/withdb"
+	"github.com/ppdraga/go-shortener/prom"
 	"github.com/ppdraga/go-shortener/settings"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/sirupsen/logrus"
 	"net"
 	"net/http"
@@ -26,6 +28,20 @@ func main() {
 	if err := godotenv.Load(); err != nil {
 		logger.Infof("No .env file found")
 	}
+
+	//Prometheus
+	prom.Init()
+	metricRouter := mux.NewRouter()
+	metricRouter.Handle("/metrics", promhttp.Handler())
+	metricsSrv := http.Server{
+		Addr:    ":9000",
+		Handler: metricRouter,
+	}
+	go func() {
+		err := metricsSrv.ListenAndServe()
+		logger.Errorf("Got an error during ListenAndServe: %v", err)
+	}()
+	logger.Infof("metrics available on 9000 port")
 
 	port := os.Getenv("PORT")
 	settings.Config = settings.Settings{
@@ -91,5 +107,9 @@ func main() {
 	err = server.Shutdown(context.Background())
 	if err != nil {
 		logger.Infof("Got an error during service shutdown: %v", err)
+	}
+	err = metricsSrv.Shutdown(context.Background())
+	if err != nil {
+		logger.Infof("Got an error closing metric service: %v", err)
 	}
 }

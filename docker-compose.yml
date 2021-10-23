@@ -31,3 +31,11 @@ services:
       interval: 1s
       timeout: 2s
       retries: 5
+
+  prometheus:
+    image: prom/prometheus:latest
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+#    ports:
+#      - 9090:9090
+    network_mode: 'host'
