@@ -9,29 +9,32 @@ import (
 	linkc "github.com/ppdraga/go-shortener/internal/shortener/link"
 	"github.com/ppdraga/go-shortener/internal/shortener/link/datatype"
 	linkwdb "github.com/ppdraga/go-shortener/internal/shortener/link/withdb"
-	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
+	"go.uber.org/zap"
+	"log"
 	"net/http"
 	"net/http/httptest"
-	"os"
 	"testing"
 )
 
 func TestAPIHandler(t *testing.T) {
-	logger := logrus.New()
-	logger.SetOutput(os.Stdout)
+	logger, err := zap.NewProduction()
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer func() { _ = logger.Sync() }()
 	rsc, err := fixtures.InitTestSQLite(logger)
 	if err != nil {
-		logger.Errorf("Can't initialize resources. Err: %v", err)
+		logger.Error("Can't initialize resources. Err", zap.Error(err))
 	}
 	defer func() {
 		err := rsc.Release()
 		if err != nil {
-			logger.Errorf("Got an error during resources release. %v", err)
+			logger.Error("Got an error during resources release.", zap.Error(err))
 		}
 	}()
 	linkdb := linkwdb.New(rsc.DB)
-	linkCtrl := linkc.NewController(linkdb)
+	linkCtrl := linkc.NewController(linkdb, logger)
 	apiHandler := APIHandler(linkCtrl)
 	redirectHandler := RedirectHandler(linkCtrl)
 
@@ -41,7 +44,7 @@ func TestAPIHandler(t *testing.T) {
 		linkBody := datatype.Link{Resource: &url, CustomName: &customName}
 		body, err := json.Marshal(linkBody)
 		if err != nil {
-			logger.Errorf("Can't marshal object. %v", err)
+			logger.Error("Can't marshal object.", zap.Error(err))
 		}
 		req, _ := http.NewRequest(http.MethodPost, "/_api/link/", bytes.NewReader(body))
 		rw := httptest.NewRecorder()
@@ -62,7 +65,7 @@ func TestAPIHandler(t *testing.T) {
 		linkBody := datatype.Link{Resource: &url, CustomName: &customName}
 		body, err := json.Marshal(linkBody)
 		if err != nil {
-			logger.Errorf("Can't marshal object. %v", err)
+			logger.Error("Can't marshal object.", zap.Error(err))
 		}
 		req, _ := http.NewRequest(http.MethodPost, "/_api/link/", bytes.NewReader(body))
 		rw := httptest.NewRecorder()
@@ -101,7 +104,7 @@ func TestAPIHandler(t *testing.T) {
 		linkBody := datatype.Link{Resource: &url, CustomName: &customName}
 		body, err := json.Marshal(linkBody)
 		if err != nil {
-			logger.Errorf("Can't marshal object. %v", err)
+			logger.Error("Can't marshal object.", zap.Error(err))
 		}
 		req, _ := http.NewRequest(http.MethodPost, "/_api/link/", bytes.NewReader(body))
 		rw := httptest.NewRecorder()

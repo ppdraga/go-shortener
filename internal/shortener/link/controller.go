@@ -1,9 +1,13 @@
 package link
 
-import "github.com/ppdraga/go-shortener/internal/shortener/link/datatype"
+import (
+	"github.com/ppdraga/go-shortener/internal/shortener/link/datatype"
+	"go.uber.org/zap"
+)
 
 type Controller struct {
-	rw LinkReadWriter
+	rw     LinkReadWriter
+	Logger *zap.Logger
 }
 
 type LinkReadWriter interface {
@@ -12,9 +16,10 @@ type LinkReadWriter interface {
 	FindLink(shortLink string) (*datatype.Link, error)
 }
 
-func NewController(rw LinkReadWriter) *Controller {
+func NewController(rw LinkReadWriter, logger *zap.Logger) *Controller {
 	return &Controller{
-		rw: rw,
+		rw:     rw,
+		Logger: logger,
 	}
 }
 

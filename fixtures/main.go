@@ -2,15 +2,15 @@ package fixtures
 
 import (
 	"github.com/ppdraga/go-shortener/database"
-	"github.com/sirupsen/logrus"
+	"go.uber.org/zap"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )
 
-func InitTestSQLite(logger *logrus.Logger) (*database.R, error) {
+func InitTestSQLite(logger *zap.Logger) (*database.R, error) {
 	dbcon, err := gorm.Open(sqlite.Open("file::memory:?cache=shared"), &gorm.Config{})
 	if err != nil {
-		logger.Errorf("Can't connect to DB: %v", err)
+		logger.Error("Can't connect to DB", zap.Error(err))
 	}
 	ApplyMigrations(dbcon)
 	return &database.R{DB: dbcon}, nil
