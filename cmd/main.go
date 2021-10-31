@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"github.com/gorilla/mux"
 	"github.com/joho/godotenv"
 	"github.com/ppdraga/go-shortener/app"
@@ -9,7 +10,8 @@ import (
 	linkc "github.com/ppdraga/go-shortener/internal/shortener/link"
 	linkwdb "github.com/ppdraga/go-shortener/internal/shortener/link/withdb"
 	"github.com/ppdraga/go-shortener/settings"
-	"github.com/sirupsen/logrus"
+	"go.uber.org/zap"
+	"log"
 	"net"
 	"net/http"
 	"os"
@@ -18,36 +20,39 @@ import (
 )
 
 func main() {
-	logger := logrus.New()
-	logger.SetOutput(os.Stdout)
+	logger, err := zap.NewProduction()
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer func() { _ = logger.Sync() }()
 
 	logger.Info("Starting the application")
 
 	if err := godotenv.Load(); err != nil {
-		logger.Infof("No .env file found")
+		logger.Info("No .env file found")
 	}
 
 	port := os.Getenv("PORT")
 	settings.Config = settings.Settings{
 		Port: port,
 	}
-	logger.Infof("Application access port: %s", port)
+	logger.Info(fmt.Sprintf("Application access port: %s", port))
 
 	// Database init
 	rsc, err := database.InitDB(logger)
 	if err != nil {
 		//logger.Panic("Can't initialize resources.", "err", err)
-		logger.Infof("Can't initialize resources. %v", err)
+		logger.Info("Can't initialize resources.", zap.Error(err))
 	}
 	defer func() {
 		err := rsc.Release()
 		if err != nil {
-			logger.Error("Got an error during resources release.", "err", err)
+			logger.Error("Got an error during resources release.", zap.Error(err))
 		}
 	}()
 
 	linkdb := linkwdb.New(rsc.DB)
-	linkCtrl := linkc.NewController(linkdb)
+	linkCtrl := linkc.NewController(linkdb, logger)
 
 	r := mux.NewRouter()
 	r.HandleFunc("/", app.HomeHandler()).Methods("GET")
@@ -70,10 +75,10 @@ func main() {
 
 	go func() {
 		err := server.ListenAndServe()
-		logger.Errorf("Got an error during ListenAndServe: %v", err)
+		logger.Error("Got an error during ListenAndServe", zap.Error(err))
 		shutdown <- err
 	}()
-	logger.Infof("The service is ready to listen and serve")
+	logger.Info("The service is ready to listen and serve")
 
 	select {
 	case killSignal := <-interrupt:
@@ -87,9 +92,9 @@ func main() {
 		logger.Info("Got an error...")
 	}
 
-	logger.Infof("The service is stopping...")
+	logger.Info("The service is stopping...")
 	err = server.Shutdown(context.Background())
 	if err != nil {
-		logger.Infof("Got an error during service shutdown: %v", err)
+		logger.Info("Got an error during service shutdown", zap.Error(err))
 	}
 }

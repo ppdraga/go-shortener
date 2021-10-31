@@ -7,6 +7,8 @@ import (
 	"github.com/ppdraga/go-shortener/internal/restapi"
 	linkc "github.com/ppdraga/go-shortener/internal/shortener/link"
 	"github.com/ppdraga/go-shortener/internal/shortener/link/datatype"
+	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 	"net/http"
 	"strconv"
 )
@@ -21,6 +23,7 @@ func APIHomeHandler() http.HandlerFunc {
 
 func APIHandler(linkCtrl *linkc.Controller) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		linkCtrl.Logger.Info("APIHandler called", zap.Field{Key: "method", String: r.Method, Type: zapcore.StringType})
 		vars := mux.Vars(r)
 		_ = vars
 		if r.Method == "POST" {

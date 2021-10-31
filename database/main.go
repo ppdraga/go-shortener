@@ -3,9 +3,10 @@ package database
 import (
 	"fmt"
 	_ "github.com/ppdraga/go-shortener/settings"
-	"github.com/sirupsen/logrus"
+	"go.uber.org/zap"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
+	"moul.io/zapgorm2"
 	"os"
 	"regexp"
 	"time"
@@ -16,7 +17,7 @@ type R struct {
 	//conn   *sql.DB
 }
 
-func InitDB(logger *logrus.Logger) (*R, error) {
+func InitDB(logger *zap.Logger) (*R, error) {
 	var host string
 	var user string
 	var password string
@@ -46,8 +47,8 @@ func InitDB(logger *logrus.Logger) (*R, error) {
 	var dbcon *gorm.DB
 	var err error
 	for _, attempt := range []int{1, 2, 3} {
-		logger.Infof("Connecting to DB, attempt %d...", attempt)
-		dbcon, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
+		logger.Info(fmt.Sprintf("Connecting to DB, attempt %d...", attempt))
+		dbcon, err = gorm.Open(postgres.Open(dsn), &gorm.Config{Logger: zapgorm2.New(logger)})
 		if err == nil {
 			logger.Info("Connected!!!")
 			break
@@ -55,7 +56,7 @@ func InitDB(logger *logrus.Logger) (*R, error) {
 		time.Sleep(3 * time.Second)
 	}
 	if err != nil {
-		logger.Error("Can't connect to DB")
+		logger.Error("Can't connect to DB", zap.Error(err))
 		return nil, err
 	}
 

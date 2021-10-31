@@ -4,11 +4,14 @@ import (
 	"fmt"
 	"github.com/ppdraga/go-shortener/internal/restapi"
 	linkc "github.com/ppdraga/go-shortener/internal/shortener/link"
+	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 	"net/http"
 )
 
 func RedirectHandler(linkCtrl *linkc.Controller) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		linkCtrl.Logger.Info("APIHandler called", zap.Field{Key: "method", String: r.Method, Type: zapcore.StringType})
 		shortLink := r.URL.Path
 		if shortLink == "" {
 			w.WriteHeader(http.StatusOK)
