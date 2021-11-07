@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/gorilla/mux"
+	"github.com/opentracing/opentracing-go"
 	"github.com/ppdraga/go-shortener/internal/restapi"
 	linkc "github.com/ppdraga/go-shortener/internal/shortener/link"
 	"github.com/ppdraga/go-shortener/internal/shortener/link/datatype"
@@ -13,8 +14,10 @@ import (
 	"strconv"
 )
 
-func APIHomeHandler() http.HandlerFunc {
+func APIHomeHandler(linkCtrl *linkc.Controller) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		span, _ := opentracing.StartSpanFromContextWithTracer(r.Context(), linkCtrl.Tracer, "APIHomeHandler")
+		defer span.Finish()
 
 		w.WriteHeader(http.StatusOK)
 		fmt.Fprint(w, "WELCOME! This is an API interface of a simple shortener service!\n")
@@ -23,6 +26,9 @@ func APIHomeHandler() http.HandlerFunc {
 
 func APIHandler(linkCtrl *linkc.Controller) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		span, _ := opentracing.StartSpanFromContextWithTracer(r.Context(), linkCtrl.Tracer, "APIHandler")
+		defer span.Finish()
+
 		linkCtrl.Logger.Info("APIHandler called", zap.Field{Key: "method", String: r.Method, Type: zapcore.StringType})
 		vars := mux.Vars(r)
 		_ = vars
