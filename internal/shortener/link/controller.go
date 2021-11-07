@@ -1,6 +1,7 @@
 package link
 
 import (
+	"github.com/opentracing/opentracing-go"
 	"github.com/ppdraga/go-shortener/internal/shortener/link/datatype"
 	"go.uber.org/zap"
 )
@@ -8,6 +9,7 @@ import (
 type Controller struct {
 	rw     LinkReadWriter
 	Logger *zap.Logger
+	Tracer opentracing.Tracer
 }
 
 type LinkReadWriter interface {
@@ -16,10 +18,11 @@ type LinkReadWriter interface {
 	FindLink(shortLink string) (*datatype.Link, error)
 }
 
-func NewController(rw LinkReadWriter, logger *zap.Logger) *Controller {
+func NewController(rw LinkReadWriter, logger *zap.Logger, tracer opentracing.Tracer) *Controller {
 	return &Controller{
 		rw:     rw,
 		Logger: logger,
+		Tracer: tracer,
 	}
 }
 
