@@ -15,5 +15,6 @@ curl -i -X GET https://go-sh.herokuapp.com/_api/link/1
 
 
 Redirect:
+curl -i -X GET http://127.0.0.1:8084/Custom_
 curl -i -X GET https://go-sh.herokuapp.com/pogoda_
 

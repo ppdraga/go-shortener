@@ -7,6 +7,7 @@ import (
 	"github.com/ppdraga/go-shortener/app"
 	"github.com/ppdraga/go-shortener/database"
 	linkc "github.com/ppdraga/go-shortener/internal/shortener/link"
+	withcache "github.com/ppdraga/go-shortener/internal/shortener/link/withcache"
 	linkwdb "github.com/ppdraga/go-shortener/internal/shortener/link/withdb"
 	"github.com/ppdraga/go-shortener/settings"
 	"github.com/sirupsen/logrus"
@@ -46,7 +47,7 @@ func main() {
 		}
 	}()
 
-	linkdb := linkwdb.New(rsc.DB)
+	linkdb := withcache.NewCachedRepo(linkwdb.New(rsc.DB))
 	linkCtrl := linkc.NewController(linkdb)
 
 	r := mux.NewRouter()
